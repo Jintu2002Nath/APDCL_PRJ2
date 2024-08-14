@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Power Outage Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .results {
+      margin-top: 20px;
+    }
+    h2, h3 {
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Power Outage Tracker</h1>
+    <form id="outage-form">
+      <div class="form-group">
+        <label for="feederName">Feeder Name:</label>
+        <select id="feederName" name="feederName" required>
+          <option value="Paltan Bazar Feeder">Paltan Bazar</option>
+          <option value="Ulubari Feeder">Ulubari</option>
+          <option value="Lastgate Feeder">Lastgate</option>
+          <option value="Beltola Feeder">Beltola</option>
+          <option value="Baisistha Feeder">Baisistha</option>
+          <option value="Six Mile Feeder">Six Mile</option>
+          <option value="Maligaon Feeder">Maligaon</option>
+          <option value="Dispur Feeder">Dispur</option>
+          <option value="Khanapara Feeder">Khanapara</option>
+          <option value="Ganeshguri Feeder">Ganeshguri </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+      <button type="submit">Get Outage Data</button>
+    </form>
+    <div id="results" class="results">
+      <h2>Results</h2>
+      <p>Total Outages: <span id="totalOutages">N/A</span></p>
+      <p>Total Outage Duration: <span id="outageDuration">N/A</span> minutes</p>
+      <h3>Outage Events</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Meter Number</th>
+            <th>Alarm Type</th>
+            <th>Feeder Code</th>
+            <th>Feeder Name</th>
+            <th>Substation</th>
+            <th>Subdivision</th>
+            <th>Alarm Time</th>
+           
+          </tr>
+        </thead>
+        <tbody id="outageEvents">
+          <!-- Outage events will be populated here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    document.getElementById('outage-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      
+      const feederName = document.getElementById('feederName').value;
+      const date = document.getElementById('date').value;
+      
+      console.log("Feeder name is", feederName);
+      console.log("Date is", date);
+      
+      fetch(`http://localhost:3000/api/outage-events?feederName=${feederName}&date=${date}`)
+    
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('totalOutages').innerText = data.totalOutages;
+          document.getElementById('outageDuration').innerText = (data.outageDuration / 1000 / 60).toFixed(2); // Convert ms to minutes
+          
+          const outageEventsTable = document.getElementById('outageEvents');
+          outageEventsTable.innerHTML = '';
+          
+          data.outageEvents.forEach(event => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${event.Meter_Number}</td>
+              <td>${event.Alarm_Type}</td>
+              <td>${event.Feeder_Code}</td>
+              <td>${event.Feeder_Name}</td>
+              <td>${event.Substation}</td>
+              <td>${event.Subdivision}</td>
+              <td>${event.Alarm_Time}</td>
+             
+            `;
+            outageEventsTable.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.log('Error fetching outage data:', error);
+        });
+    });
+  </script>
+</body>
+</html>
